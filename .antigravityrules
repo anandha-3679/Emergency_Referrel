@@ -1,0 +1,12 @@
+# Global Rules
+Output unified diffs only, no entire file rewrites. Zero conversational preamble.
+
+# Python Guidelines
+Enforce PEP8 strictly.
+Mandate that all test commands use `pytest -q`.
+Linter execution: `ruff check --quiet`.
+
+# JS/TS Guidelines
+Enforce strict functional component boundaries.
+Quiet test execution: `npm test -- --silent` or equivalent quiet execution.
+Linter execution: `eslint --quiet`.
