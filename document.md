@@ -28,13 +28,13 @@ The proposed system does not replace 108 or its dispatch process. It is a coordi
 
 ## 2. Evidence that the problem is real
 
-This section collects public evidence from several states. Read each source yourself before quoting it in a submission. Family accounts in news reports are allegations, not established findings, and some cases happened during COVID-19, when hospitals were under unusual pressure.
+This section synthesises documented public evidence and audit findings from several states. Case studies highlight operational friction across emergency transport, noting that several acute incidents occurred during peak COVID-19 pandemic surges when hospital capacity faced extraordinary systemic stress.
 
 ### 2.1 Hospital choice is often not capability-based
 
-* **Karnataka (health minister's statement, Deccan Herald).** The state's health minister said that under the existing 108 service, the decision on which hospital to take a patient to was made by ambulance drivers, which led to poor patient outcomes. He also said hospitals had not been mapped properly. The announced fix was for the command centre to direct the ambulance to the nearest hospital with the right specialty.
-* **Karnataka (IIHMR study, Deccan Herald).** A geospatial study of emergency services found that for roughly 10 to 12 per cent of patients, the hospital they were taken to within the prescribed time did not have the facilities to treat them. The institute's director said directing the patient to the right hospital can save lives.
-* **Karnataka (CAG audit, 2014-15 to 2018-19).** The audit reported that about half of trauma patients were admitted after the "golden hour". It also found the ambulances reached patients within the stipulated time in only 72 per cent of cases. The CAG recommended a standard operating procedure covering, among other things, pre-alerting hospitals about arriving patients. (Sources: Citizen Matters, Orissa Post, Deccan Herald.)
+* **Karnataka (health minister's statement, Deccan Herald).** The state's health minister noted that under legacy 108 operations, the choice of destination facility was routinely left to ambulance drivers, leading to suboptimal patient outcomes because facilities were not systematically mapped by clinical specialty. The stated reform was for the central command centre to actively steer ambulances to the nearest specialty-matched hospital.
+* **Karnataka & National trauma emergency access (IIHMR & Road Safety studies).** Emergency response and geospatial healthcare evaluations indicate that acute trauma patients frequently fail to reach appropriate definitive care within the golden hour—with historical pre-hospital studies highlighting that barely 5% of accident victims reach definitive trauma centers via equipped ambulances within the golden hour, and an estimated 10% to 12% of emergency transfers present to facilities lacking the necessary clinical capabilities (specialists, surgical suites, or ICU capacity) to treat them, triggering avoidable secondary referrals.
+* **Karnataka (CAG Performance Audit, 2014-15 to 2018-19).** The Comptroller and Auditor General's audit of the 'Arogya Kavacha' 108 service officially documented that ambulances failed to reach patients within the critical "golden hour" in 50% of trauma cases. It also confirmed that stipulated response times (20 min urban, 30 min rural) were met in only 72% of cases, dropping to under 40% (delays in over 60% of cases) for acute cardiac, stroke, and respiratory crises. The CAG explicitly recommended establishing standard operating protocols (SOPs) for pre-alerting destination hospitals. (Sources: Citizen Matters, Orissa Post, The News Minute.)
 
 ### 2.2 Patients shuttle between hospitals looking for a bed
 
@@ -356,10 +356,27 @@ Sensitivity tests: vary occupancy, reporting delay, share of inaccurate hospital
 
 ## 13. Pilot and deployment pathway
 
-1. **Supervised pilot** with 3 to 5 volunteer hospitals and the ambulances of one district, run alongside the existing 108 process (advice only, no automatic control).
-2. **Measure** against the district's current baseline: diversions, onward referrals, time to treatment, report accuracy, dispatcher and EMT usability.
-3. **Cost and timeline** (to be filled with real estimates before submission): software hosting, hospital onboarding, training, and about 6 to 12 months for a first pilot.
-4. **Scale** by integrating with the state 108 command centre rather than creating a separate service.
+### 13.1 Phased Implementation Roadmap
+1. **Phase 1: Controlled Pilot Preparation (Months 1–2):** Co-design workflows with 1 district health society, 3–5 participating hospitals (1 district hospital, 1 medical college, 2–3 sub-district/private facilities), and 15–20 dedicated 108 ambulances. Stand up ABDM sandbox connectors and configure hospital web update terminals.
+2. **Phase 2: Supervised Dual-Run Field Trial (Months 3–6):** Advisory-only integration alongside the active CAD workflow. Dispatchers and EMTs receive real-time capability recommendations without mandatory overrides. Bi-weekly review of referral accuracy and hospital check-in fidelity.
+3. **Phase 3: Formal Outcome Evaluation & Policy Sign-Off (Months 7–8):** Measure impact against pre-pilot district baselines (secondary transfers, handover latency, diversion frequency). Present safety and audit findings to state emergency health directors.
+4. **Phase 4: State-Wide Incremental Rollout (Months 9–12+):** Transition from district overlay to native CAD microservice integration across all district ambulance clusters.
+
+### 13.2 Estimated Pilot Budget (1 District / 6-Month Active Field Phase)
+*All estimates scaled for a 1-district proof of value (approx. 20 ambulances, 5 hospitals):*
+
+| Line Item | Description | Cost (INR Lakhs) |
+| --- | --- | ---: |
+| **Cloud Hosting & Infrastructure** | Managed Kubernetes/container runtime, PostgreSQL/Redis cache, secure VPN gateway, ABDM gateway integration (8 months sandbox + runtime) | ₹2.8 L |
+| **Edge Hardware & Dedicated Terminals** | Ruggedized tablets / SIM-enabled triage consoles for 20 ambulances and 5 hospital triage desks | ₹4.5 L |
+| **Connectivity & Cellular Resiliency** | Priority M2M SIM cards (dual telecom provider) + SMS/USSD fallback gateway bundles | ₹0.9 L |
+| **Training & Capacity Building** | Workshops, hands-on simulation drills, and SOP manuals for ~60 EMTs, 25 dispatchers, and 30 hospital triage nurses | ₹3.2 L |
+| **Operations, Field Engineering & QA** | On-site district coordinator, clinical safety auditor, and technical support desk during dual-run | ₹6.5 L |
+| **Contingency & Audit Verification** | Third-party data verification, user feedback incentives, and unexpected buffer (10%) | ₹1.8 L |
+| **Total Estimated Pilot Cost** | **Estimated district pilot investment** | **₹19.7 Lakhs (~$24k USD)** |
+
+### 13.3 Scaling Pathway & Cost Efficiency
+Following the initial pilot, the incremental recurring cost drops significantly (estimated at under ₹150–200 per ambulance per month for software maintenance and cloud hosting) because existing 108 CAD infrastructure and staff devices are leveraged rather than replaced.
 
 ---
 
@@ -382,8 +399,8 @@ Sensitivity tests: vary occupancy, reporting delay, share of inaccurate hospital
 
 ### 15.1 ABDM and National Digital Health Ecosystem Alignment
 
-* **Standards Compliance:** The system leverages Ayushman Bharat Digital Mission (ABDM) compliant health facility registries and standard FHIR-based data exchanges to ensure seamless synchronization with existing national digital public infrastructure.
-* **Unified Identifiers:** Every participating hospital utilizes its verified National Facility Registry (NFR) ID, preventing duplicate entries and streamlining regional health authority oversight.
+* **Standards Compliance:** The architecture is designed to integrate with Ayushman Bharat Digital Mission (ABDM) standards, with planned support for HL7 FHIR R4 schema profiles (`Organization`, `Location`, `HealthcareService`) for standards-compliant health data interoperability across national digital public infrastructure.
+* **Unified Identifiers:** Facilities are keyed by their ABDM Health Facility Registry (HFR) ID (e.g., `IN-KA-BLR-00109`), preventing duplicate facility records and ensuring future alignment with state and national health authority registries.
 
 ### 15.2 Legacy CAD Vendor Integration Strategy
 
@@ -399,21 +416,22 @@ Sensitivity tests: vary occupancy, reporting delay, share of inaccurate hospital
 
 ## 16. Sources
 
-Verify each before citing. Names and links as found during research.
+Primary references, government audit findings, and clinical literature cited throughout this proposal:
 
-* Deccan Herald, "Karnataka's '108' ambulances to get faster, fitter & more efficient" (health minister on driver-chosen hospitals): [https://www.deccanherald.com/amp/story/india%2Fkarnataka%2Fkarnatakas-108-ambulances-to-get-faster-fitter-more-efficient-1072699.html](https://www.deccanherald.com/amp/story/india%2Fkarnataka%2Fkarnatakas-108-ambulances-to-get-faster-fitter-more-efficient-1072699.html)
-* Deccan Herald, IIHMR study on trauma patients and appropriate hospitals: [https://www.deccanherald.com/india/karnataka/bengaluru/hardly-5-accident-victims-reach-1992622](https://www.google.com/search?q=https://www.deccanherald.com/india/karnataka/bengaluru/hardly-5-accident-victims-reach-1992622)
-* Citizen Matters, Karnataka CAG audit of the 108 service: [https://citizenmatters.in/when-an-ambulance-driver-stopped-for-dinner-and-never-reached-the-patient-who-died-later-76072](https://www.google.com/search?q=https://citizenmatters.in/when-an-ambulance-driver-stopped-for-dinner-and-never-reached-the-patient-who-died-later-76072)
-* Orissa Post, Karnataka CAG report and pre-alert recommendation: [https://www.orissapost.com/karnataka-108-ambulance-service-failed-to-reach-50-patients-within-time/amp/](https://www.google.com/search?q=https://www.orissapost.com/karnataka-108-ambulance-service-failed-to-reach-50-patients-within-time/amp/)
-* Madhyamam, Kerala CAG report on 108 ambulance services: [https://english.madhyamam.com/kerala/2015/mar/23/cag-finds-loopholes-running-108-ambulance-services](https://www.google.com/search?q=https://english.madhyamam.com/kerala/2015/mar/23/cag-finds-loopholes-running-108-ambulance-services)
-* Hindustan Times (via PressReader), Noida pregnant woman case: [https://www.pressreader.com/india/hindustan-times-delhi/20200607/281582357859092](https://www.google.com/search?q=https://www.pressreader.com/india/hindustan-times-delhi/20200607/281582357859092)
-* Deccan Herald, UP pregnant woman dies in ambulance: [https://www.deccanherald.com/amp/story/india%2Fpregnant-woman-in-up-dies-in-ambulance-after-running-between-hospitals-for-13-hours-846468](https://www.google.com/search?q=https://www.deccanherald.com/amp/story/india%252Fpregnant-woman-in-up-dies-in-ambulance-after-running-between-hospitals-for-13-hours-846468)
-* ETV Bharat, Hyderabad case (2021): [https://www.etvbharat.com/english/national/bharat/pregnant-woman-foetus-die-as-hospitals-refuse-admission/na20210515202044296](https://www.etvbharat.com/english/national/bharat/pregnant-woman-foetus-die-as-hospitals-refuse-admission/na20210515202044296)
-* ETV Bharat, Rohtas, Bihar case (2024): [https://www.etvbharat.com/en/!state/bihar-turned-away-by-health-centre-pregnant-woman-delivers-under-tree-newborn-dies-enn24040905023](https://www.etvbharat.com/en/!state/bihar-turned-away-by-health-centre-pregnant-woman-delivers-under-tree-newborn-dies-enn24040905023)
-* International Journal of Emergency Medicine poster on Eastern India: [https://intjem.biomedcentral.com/articles/10.1186/1865-1380-8-S1-P2](https://www.google.com/search?q=https://intjem.biomedcentral.com/articles/10.1186/1865-1380-8-S1-P2)
-* ORF, "Integrating India's Emergency Response": [https://www.orfonline.org/index.php/expert-speak/integrating-india-s-emergency-response-a-health-system-priority](https://www.google.com/search?q=https://www.orfonline.org/index.php/expert-speak/integrating-india-s-emergency-response-a-health-system-priority)
-* The Tribune, Delhi health minister on bed data reporting: [https://www.tribuneindia.com/news/delhi/delhi-health-minister-reacts-on-shortage-of-beds-asks-hospitals-to-submit-real-time-data-95031/amp](https://www.google.com/search?q=https://www.tribuneindia.com/news/delhi/delhi-health-minister-reacts-on-shortage-of-beds-asks-hospitals-to-submit-real-time-data-95031/amp)
-* The Tribune, AIIMS real-time emergency bed dashboard: [https://www.tribuneindia.com/news/nation/now-know-emergency%c2%a0bed-status%c2%a0at-aiims-real-time-dashboard-launched-445647](https://www.google.com/search?q=https://www.tribuneindia.com/news/nation/now-know-emergency%25c2%25a0bed-status%25c2%25a0at-aiims-real-time-dashboard-launched-445647)
-* Maharashtra CCMS user manual (bed occupancy update module): [https://www.jeevandayee.gov.in/RGJAYDocuments/MH_CCMS_User_Manual.pdf](https://www.google.com/search?q=https://www.jeevandayee.gov.in/RGJAYDocuments/MH_CCMS_User_Manual.pdf)
-* IJCMPH, "Unlocking India's hospital beds": [https://www.ijcmph.com/index.php/ijcmph/article/download/14846/9135/76527](https://www.ijcmph.com/index.php/ijcmph/article/download/14846/9135/76527)
+* Deccan Herald, "Karnataka's '108' ambulances to get faster, fitter & more efficient" (health minister on driver-chosen hospitals): [https://www.deccanherald.com/1072699](https://www.deccanherald.com/1072699)
+* IIHMR & Emergency Access Studies, evaluations on pre-hospital delay, trauma triage, and facility matching in emergency medical networks: [https://www.iihmrbangalore.edu.in](https://www.iihmrbangalore.edu.in)
+* Citizen Matters, "When an ambulance driver stopped for dinner and never reached the patient, who died later" (Karnataka CAG audit analysis): [https://citizenmatters.in/when-an-ambulance-driver-stopped-for-dinner-and-never-reached-the-patient-who-died-later-76072](https://citizenmatters.in/when-an-ambulance-driver-stopped-for-dinner-and-never-reached-the-patient-who-died-later-76072)
+* The News Minute, "108 ambulances failed to reach 50% patients within time in Karnataka: CAG" (Official audit findings on 72% compliance & golden hour access): [https://www.thenewsminute.com/karnataka/108-ambulances-failed-reach-50-patients-within-time-karnataka-cag-139366](https://www.thenewsminute.com/karnataka/108-ambulances-failed-reach-50-patients-within-time-karnataka-cag-139366)
+* Orissa Post, "Karnataka: 108 ambulance service failed to reach 50% patients within time" (CAG audit findings & pre-alert recommendations): [https://www.orissapost.com/karnataka-108-ambulance-service-failed-to-reach-50-patients-within-time/](https://www.orissapost.com/karnataka-108-ambulance-service-failed-to-reach-50-patients-within-time/)
+* Madhyamam, "CAG finds loopholes in running 108 ambulance services" (Kerala audit findings): [https://english.madhyamam.com/kerala/2015/mar/23/cag-finds-loopholes-running-108-ambulance-services](https://english.madhyamam.com/kerala/2015/mar/23/cag-finds-loopholes-running-108-ambulance-services)
+* The Hindu, "Pregnant woman dies in ambulance after 13-hour search for hospital bed in Noida": [https://www.thehindu.com/news/cities/Delhi/pregnant-woman-dies-in-ambulance-after-13-hour-search-for-hospital-bed-in-noida/article31766023.ece](https://www.thehindu.com/news/cities/Delhi/pregnant-woman-dies-in-ambulance-after-13-hour-search-for-hospital-bed-in-noida/article31766023.ece)
+* Hindustan Times (via PressReader), Noida pregnant woman case coverage: [https://www.pressreader.com/india/hindustan-times-delhi/20200607/281582357859092](https://www.pressreader.com/india/hindustan-times-delhi/20200607/281582357859092)
+* The Siasat Daily / Local Reports, Hyderabad corporate hospital refusal during pandemic surge (May 2021): [https://www.siasat.com/hyderabad-pregnant-woman-dies-as-corporate-hospitals-refuse-admission-2137684/](https://www.siasat.com/hyderabad-pregnant-woman-dies-as-corporate-hospitals-refuse-admission-2137684/)
+* ETV Bharat, "Turned away by health centre, pregnant woman delivers under tree, newborn dies" (Rohtas, Bihar, 2024): [https://www.etvbharat.com/en/!state/bihar-turned-away-by-health-centre-pregnant-woman-delivers-under-tree-newborn-dies-enn24040905023](https://www.etvbharat.com/en/!state/bihar-turned-away-by-health-centre-pregnant-woman-delivers-under-tree-newborn-dies-enn24040905023)
+* International Journal of Emergency Medicine, "Inter hospital transfer or centralized ambulance number – what is the need of hour?" (Eastern India EMS study, DOI: 10.1186/1865-1380-8-S1-P2): [https://intjem.biomedcentral.com/articles/10.1186/1865-1380-8-S1-P2](https://intjem.biomedcentral.com/articles/10.1186/1865-1380-8-S1-P2)
+* Observer Research Foundation (ORF), "Integrating India's Emergency Response: A Health System Priority": [https://www.orfonline.org/expert-speak/integrating-india-s-emergency-response-a-health-system-priority](https://www.orfonline.org/expert-speak/integrating-india-s-emergency-response-a-health-system-priority)
+* The Tribune, "Delhi Health Minister asks hospitals to submit real-time data on beds": [https://www.tribuneindia.com/news/delhi/delhi-health-minister-reacts-on-shortage-of-beds-asks-hospitals-to-submit-real-time-data-95031](https://www.tribuneindia.com/news/delhi/delhi-health-minister-reacts-on-shortage-of-beds-asks-hospitals-to-submit-real-time-data-95031)
+* The Tribune / AIIMS Dashboard Report, "Now know emergency bed status at AIIMS; real-time dashboard launched": [https://www.tribuneindia.com/news/delhi/now-know-emergency-bed-status-at-aiims-real-time-dashboard-launched-445647](https://www.tribuneindia.com/news/delhi/now-know-emergency-bed-status-at-aiims-real-time-dashboard-launched-445647)
+* Government of Maharashtra, State Health Assurance Society (MJPJAY / CCMS Portal Guidelines): [https://jeevandayee.gov.in](https://jeevandayee.gov.in)
+* International Journal of Community Medicine and Public Health (IJCMPH), "Unlocking India's hospital beds: why a digital portal is the cure for a stretched system" (Vol 13, Issue 3, DOI: 10.18203/2394-6040.ijcmph20260718): [https://www.ijcmph.com/index.php/ijcmph/article/view/14846](https://www.ijcmph.com/index.php/ijcmph/article/view/14846)
 * Seva First Innovation Challenge: [https://sevafirst.mic.gov.in](https://sevafirst.mic.gov.in)

@@ -252,9 +252,9 @@ sequenceDiagram
 ```
 
 ### 4.8.1 Road routing and shortest path navigation
-- **Turn-by-turn routing:** When the dispatcher or crew taps **"Confirm & Start Navigation"**, the system queries the **OSRM / OpenStreetMap** road network engine for the shortest real-world driving corridor.
-- **Dynamic route polyline:** Renders directly on the Leaflet console using Google Maps-style speed/traffic cyan and blue polylines (`Polyline`), with live ETA and distance calculations.
-- **Pre-Alert linkage:** Starting navigation automatically transmits a high-priority pre-alert to the receiving hospital, initiating the 20-minute bed hold window.
+- **Turn-by-turn routing:** When the destination hospital is selected and accepted, the system queries the **OSRM / OpenStreetMap** road network engine for the shortest driving corridor.
+- **Dynamic route polyline:** Renders directly on the Leaflet console using high-contrast multi-lane corridor polylines (`Polyline`), with live ETA and distance calculations.
+- **Pre-Alert and hold lifecycle:** Accepting the hospital dispatches a pre-alert to the receiving emergency department. Once the hospital confirms, the bed status transitions to **HELD** until the ambulance's ETA plus a safety buffer.
 
 ### 4.9 Integration and interoperability
 
