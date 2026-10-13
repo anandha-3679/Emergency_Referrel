@@ -67,8 +67,30 @@ def get_target_ward(category: str) -> str:
     return cat_info.get("target_ward", "ER")
 
 
+def get_effective_ward(hospital: Dict[str, Any], category: str) -> str:
+    """
+    Returns the appropriate ward in this specific hospital for the given category.
+    Prefers primary target_ward if present; falls back to fallback_ward if defined and present in hospital wards.
+    """
+    cat_key = category.upper()
+    cat_info = CATEGORY_CAPABILITY_MAP.get(cat_key, CATEGORY_CAPABILITY_MAP["GENERAL"])
+    target = cat_info.get("target_ward", "ER")
+    hosp_wards = hospital.get("wards", {})
+
+    if target in hosp_wards:
+        return target
+
+    fallback = cat_info.get("fallback_ward")
+    if fallback and fallback in hosp_wards:
+        return fallback
+
+    # If neither target nor fallback exists in hospital wards, return target so lack of beds can be penalized
+    return target
+
+
 def is_hospital_capable(hospital: Dict[str, Any], category: str) -> bool:
     """Checks if a hospital satisfies all required capabilities for the category."""
     required = set(get_required_capabilities(category))
     hosp_caps = set(hospital.get("capabilities", []))
     return required.issubset(hosp_caps)
+

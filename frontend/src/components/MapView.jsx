@@ -139,7 +139,7 @@ export default function MapView({
           url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
 
-        {/* Turn-by-Turn Route Navigation Polyline (Google Maps Traffic Style) */}
+        {/* Turn-by-Turn Route Navigation Polyline (Road Traffic Style) */}
         {activeRoute && activeRoute.coords && activeRoute.coords.length > 0 && (
           <>
             {/* Background shadow glow */}
@@ -229,7 +229,7 @@ export default function MapView({
         })}
       </MapContainer>
 
-      {/* Floating Active Turn-by-Turn Navigation HUD (Google Maps style) */}
+      {/* Floating Active Turn-by-Turn Navigation HUD */}
       {activeRoute && (
         <div
           style={{

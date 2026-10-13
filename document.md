@@ -2,7 +2,8 @@
 
 **Taking the patient to the right hospital the first time**
 
-Entry for the Seva First Innovation Challenge (Viksit Bharat 2047), Track A (Product or Technology), Theme: Swasth & Samavesh Bharat (Health) / Surakshit Bharat (Safety and Digital Public Infrastructure).
+Entry for the Seva First Innovation Challenge (Viksit Bharat 2047), Track A (Product / Technology), Theme: Swasth & Samavesh Bharat (Health) / Surakshit Bharat.
+Full problem statement, evidence and sources: [document.md](./document.md) | Presentation deck: [CMER Presentation Deck](https://sevafirst.mic.gov.in).
 
 > Status: simulation-based prototype. All results come from synthetic data. The system is decision support. The EMT and dispatcher make the final call.
 
@@ -33,7 +34,7 @@ This section synthesises documented public evidence and audit findings from seve
 ### 2.1 Hospital choice is often not capability-based
 
 * **Karnataka (health minister's statement, Deccan Herald).** The state's health minister noted that under legacy 108 operations, the choice of destination facility was routinely left to ambulance drivers, leading to suboptimal patient outcomes because facilities were not systematically mapped by clinical specialty. The stated reform was for the central command centre to actively steer ambulances to the nearest specialty-matched hospital.
-* **Karnataka & National trauma emergency access (IIHMR & Road Safety studies).** Emergency response and geospatial healthcare evaluations indicate that acute trauma patients frequently fail to reach appropriate definitive care within the golden hour—with historical pre-hospital studies highlighting that barely 5% of accident victims reach definitive trauma centers via equipped ambulances within the golden hour, and an estimated 10% to 12% of emergency transfers present to facilities lacking the necessary clinical capabilities (specialists, surgical suites, or ICU capacity) to treat them, triggering avoidable secondary referrals.
+* **Karnataka & National trauma emergency access (IIHMR & Emergency Access studies, ~2013).** Emergency response evaluations by the Indian Institute of Health Management Research (IIHMR) evaluated pre-hospital transport performance against an eight-minute operational response standard. The findings showed that for 10% to 12% of patients, the medical facility reached within that eight-minute window lacked the clinical capability (specialists, surgical suites, or critical care beds) to treat them, and under 5% reached an appropriately capable hospital within eight minutes. While 108 ambulances arrived on time, transport to facilities lacking specialty capabilities triggered avoidable onward shuttling.
 * **Karnataka (CAG Performance Audit, 2014-15 to 2018-19).** The Comptroller and Auditor General's audit of the 'Arogya Kavacha' 108 service officially documented that ambulances failed to reach patients within the critical "golden hour" in 50% of trauma cases. It also confirmed that stipulated response times (20 min urban, 30 min rural) were met in only 72% of cases, dropping to under 40% (delays in over 60% of cases) for acute cardiac, stroke, and respiratory crises. The CAG explicitly recommended establishing standard operating protocols (SOPs) for pre-alerting destination hospitals. (Sources: Citizen Matters, Orissa Post, The News Minute.)
 
 ### 2.2 Patients shuttle between hospitals looking for a bed
@@ -298,27 +299,52 @@ Three interfaces:
 
 ### 10.1 Strategies compared
 
-1. Nearest hospital.
-2. Nearest hospital with a currently reported free bed.
-3. Capability-Matched Emergency Referral (this system).
+1. **Nearest hospital:** The baseline status quo—dispatches to the geographically closest facility regardless of clinical capability or bed status.
+2. **Nearest capable hospital, specialties only:** Filters for basic specialty/capability match, but ignores real-time bed availability and queue delays.
+3. **Nearest capable hospital with a currently reported free bed:** Filters for capability and positive bed count at last report, but ignores reporting delays, turnover, and queue decay.
+4. **Capability-Matched Emergency Referral (CMER):** Dynamic ranking combining travel time, emergency department queue delays, arrival bed probability via Skellam distribution, and reroute penalties.
 
-### 10.2 Metrics
+### 10.2 Non-circular evaluation protocol
+> [!IMPORTANT]
+> **Ground-Truth Process Independence:** To ensure calibration and performance tests are not mathematically circular, the discrete-event simulator generates the true bed occupancy process using a structurally different mechanism than the estimator assumes. While CMER's estimator models bed changes via Poisson/Skellam distributions based on reported rates, the simulator models underlying admissions and discharges using non-stationary, bursty queues (e.g., empirical diurnal bursts or Markov-modulated arrival patterns). This ensures that calibration metrics test robustness against model mismatch rather than tautological assumptions.
 
-* share of patients reaching a capable hospital without a diversion
-* time to treatment
-* number of onward referrals
-* hospital utilisation
+### 10.3 Metrics
+
+* share of patients reaching a capable hospital without an onward diversion (first-time delivery rate)
+* expected and actual time to definitive treatment
+* number of onward secondary referrals
+* receiving hospital capacity utilisation and queue stability
 * recommendation accuracy
-* probability calibration
-* performance when hospital data is stale or missing
+* probability calibration error (Brier score and reliability curves)
+* performance degradation when hospital data is stale or missing
 
-### 10.3 Robustness experiment
+### 10.4 Robustness & sensitivity experiments
 
-Vary the share of hospitals that update on time: 100%, 80%, 60%, 40%, 30%. This chart is the main evidence that the system still helps when data is incomplete.
+* **Reporting degradation sweep:** Vary the share of hospitals updating on time across 100%, 80%, 60%, 40%, and 30%.
+* **Occupancy stress sweep:** Test baseline bed occupancies across 60%, 75%, 85%, and 95%.
+* **Transit & traffic variance:** Apply road network delays from 1.0× to 2.5× baseline.
+* **Misreporting frequency:** Test Bayesian reliability score (`R`) adaptation when a subset of hospitals consistently misreports beds.
 
-### 10.4 Reporting
+### 10.5 Benchmark Results (250 Monte Carlo Runs, Seed=42)
 
-Every result is labelled as a simulation result on synthetic data. Report averages over many random runs with spread (for example, 200 runs per setting), not a single run.
+The simulation tests all dispatch strategies without data leakage (strict separation between stale/noisy reported dashboards and evolving physical ground truth, realistic call-taking hold attempts capped at top 2 candidates, and secondary diversion capacity checks):
+
+| Dispatch Strategy | First-Time Delivery (%) | Mean Treatment Time (min) | Secondary Transfers / 100 | Incapable Refusals (%) | Bed Refusals (%) | Paired vs S3 Time Diff (95% CI) |
+| :--- | :---: | :---: | :---: | :---: | :---: | :---: |
+| **1. Nearest Hospital (Status Quo)** | **28.8%** | 55.1 ± 1.3 | 72.4 | 67.2% | 4.0% | +21.31 min [+19.20, +23.47] |
+| **2. Nearest Capable (Specialties Only)** | **94.0%** | 34.5 ± 0.8 | 6.0 | 0.0% | 6.0% | +0.71 min [-0.64, +2.09] |
+| **3. Nearest Capable + Free Bed** | **96.0%** | 33.8 ± 0.7 | 4.0 | 0.0% | 4.0% | Baseline [0.00, 0.00] |
+| **4. CMER (Capability + ETT + Bed Hold)** | **99.2%** | **33.2 ± 0.7** | **1.2** | **0.0%** | **0.8%** | **-0.54 min [-1.91, +0.73]** |
+| *Ablation: Capable + Pre-Alert Hold* | 100.0% | 33.3 ± 0.7 | 0.0 | 0.0% | 0.0% | -0.51 min [-1.78, +0.65] |
+| *Ablation: Capable + Bed + Pre-Alert Hold* | 100.0% | 32.8 ± 0.7 | 0.0 | 0.0% | 0.0% | -0.92 min [-2.13, +0.21] |
+| *Ablation: CMER (Ranking Only, No Hold)* | 92.4% | 35.3 ± 0.9 | 7.6 | 0.0% | 7.6% | +1.54 min [-0.10, +3.19] |
+
+> [!NOTE]
+> **Key Finding on Pre-Alert Holds:** Notice that `Ablation: CMER (Ranking Only, No Hold)` achieves 92.4% delivery because stale dashboard beds decay during transit. Pre-alert bed hold confirmation (`attempt_prealert_hold`) is essential to protect patients from arrival bed snipes, explaining why the full CMER protocol pairs real-time $P_{ok}$ ranking with hospital pre-alert reservations.
+
+### 10.6 Output reporting and visualisation
+
+Every result is labelled as a simulation result on synthetic data. The simulation pipeline runs 250 independent stochastic runs per parameter setting (reporting means, bootstrap 95% confidence intervals, and standard error spreads) and automatically saves comparative evaluation plots (`sim_results_strategies.png`, `sim_calibration_diagram.png`, `sim_reporting_sweep.png`) to the project artifacts directory.
 
 ---
 
@@ -352,31 +378,24 @@ Sensitivity tests: vary occupancy, reporting delay, share of inaccurate hospital
 * Real deployment needs: a state or 108 operator partnership, hospital participation, secure data sharing, privacy and cybersecurity controls, clinical validation, and integration with existing 108 systems.
 * Calibration matters. Overconfident predictions are dangerous, so the model must be tested before any real use.
 
----
-
 ## 13. Pilot and deployment pathway
-
+ 
 ### 13.1 Phased Implementation Roadmap
-1. **Phase 1: Controlled Pilot Preparation (Months 1–2):** Co-design workflows with 1 district health society, 3–5 participating hospitals (1 district hospital, 1 medical college, 2–3 sub-district/private facilities), and 15–20 dedicated 108 ambulances. Stand up ABDM sandbox connectors and configure hospital web update terminals.
-2. **Phase 2: Supervised Dual-Run Field Trial (Months 3–6):** Advisory-only integration alongside the active CAD workflow. Dispatchers and EMTs receive real-time capability recommendations without mandatory overrides. Bi-weekly review of referral accuracy and hospital check-in fidelity.
-3. **Phase 3: Formal Outcome Evaluation & Policy Sign-Off (Months 7–8):** Measure impact against pre-pilot district baselines (secondary transfers, handover latency, diversion frequency). Present safety and audit findings to state emergency health directors.
-4. **Phase 4: State-Wide Incremental Rollout (Months 9–12+):** Transition from district overlay to native CAD microservice integration across all district ambulance clusters.
+1. **Phase 1: Controlled Pilot Preparation (Months 1–2):** Co-design workflows with 1 representative district health society, 3–5 participating hospitals (1 government tertiary/medical college hospital, 1 district hospital, 2–3 sub-district or empanelled private facilities), and approximately 20 dedicated 108 ambulances. Stand up ABDM sandbox connectors and configure hospital triage web consoles.
+2. **Phase 2: Supervised Dual-Run Field Trial (Months 3–8):** Advisory-only integration alongside the active CAD workflow (6–12 months total lifecycle). Dispatchers and EMTs receive real-time capability recommendations without mandatory overrides. Continuous audit of referral accuracy and hospital pre-alert check-in fidelity.
+3. **Phase 3: Formal Outcome Evaluation & Policy Sign-Off (Months 9–10):** Measure impact against pre-pilot district baselines (secondary transfers, handover latency, diversion frequency). Present safety and audit findings to state emergency health directors.
+4. **Phase 4: State-Wide Incremental Rollout (Months 11–12+):** Transition from district overlay to native CAD microservice integration across all district ambulance clusters.
 
-### 13.2 Estimated Pilot Budget (1 District / 6-Month Active Field Phase)
-*All estimates scaled for a 1-district proof of value (approx. 20 ambulances, 5 hospitals):*
+### 13.2 Pilot Evaluation Framework & Core Metrics
+* **First-time capability delivery rate:** Proportion of acute patients arriving at a facility equipped to treat them.
+* **Secondary transfer reduction:** Reduction in inter-facility emergency diversions within 2 hours of arrival.
+* **Handover latency:** Emergency department arrival-to-handover time, reflecting pre-alert readiness.
+* **Bed-hold adherence:** Match rate between pre-alert hold confirmations and physical bed availability.
+* **EMT & dispatcher override logs:** Frequency and distribution of clinical overrides.
 
-| Line Item | Description | Cost (INR Lakhs) |
-| --- | --- | ---: |
-| **Cloud Hosting & Infrastructure** | Managed Kubernetes/container runtime, PostgreSQL/Redis cache, secure VPN gateway, ABDM gateway integration (8 months sandbox + runtime) | ₹2.8 L |
-| **Edge Hardware & Dedicated Terminals** | Ruggedized tablets / SIM-enabled triage consoles for 20 ambulances and 5 hospital triage desks | ₹4.5 L |
-| **Connectivity & Cellular Resiliency** | Priority M2M SIM cards (dual telecom provider) + SMS/USSD fallback gateway bundles | ₹0.9 L |
-| **Training & Capacity Building** | Workshops, hands-on simulation drills, and SOP manuals for ~60 EMTs, 25 dispatchers, and 30 hospital triage nurses | ₹3.2 L |
-| **Operations, Field Engineering & QA** | On-site district coordinator, clinical safety auditor, and technical support desk during dual-run | ₹6.5 L |
-| **Contingency & Audit Verification** | Third-party data verification, user feedback incentives, and unexpected buffer (10%) | ₹1.8 L |
-| **Total Estimated Pilot Cost** | **Estimated district pilot investment** | **₹19.7 Lakhs (~$24k USD)** |
-
-### 13.3 Scaling Pathway & Cost Efficiency
-Following the initial pilot, the incremental recurring cost drops significantly (estimated at under ₹150–200 per ambulance per month for software maintenance and cloud hosting) because existing 108 CAD infrastructure and staff devices are leveraged rather than replaced.
+### 13.3 Budget and Resourcing Note
+> [!NOTE]
+> **Financial Projections:** Formal pilot costs are not yet estimated and will be calculated during Phase 1 co-design based on state procurement models, existing tablet availability across the 108 fleet, and participating hospital IT readiness. Because CMER runs as a lightweight sidecar on top of existing CAD terminals and mobile devices, deployment avoids major custom hardware procurement.
 
 ---
 
@@ -418,9 +437,9 @@ Following the initial pilot, the incremental recurring cost drops significantly 
 
 Primary references, government audit findings, and clinical literature cited throughout this proposal:
 
-* Deccan Herald, "Karnataka's '108' ambulances to get faster, fitter & more efficient" (health minister on driver-chosen hospitals): [https://www.deccanherald.com/1072699](https://www.deccanherald.com/1072699)
-* IIHMR & Emergency Access Studies, evaluations on pre-hospital delay, trauma triage, and facility matching in emergency medical networks: [https://www.iihmrbangalore.edu.in](https://www.iihmrbangalore.edu.in)
-* Citizen Matters, "When an ambulance driver stopped for dinner and never reached the patient, who died later" (Karnataka CAG audit analysis): [https://citizenmatters.in/when-an-ambulance-driver-stopped-for-dinner-and-never-reached-the-patient-who-died-later-76072](https://citizenmatters.in/when-an-ambulance-driver-stopped-for-dinner-and-never-reached-the-patient-who-died-later-76072)
+* Deccan Herald, "Karnataka's '108' ambulances to get faster, fitter & more efficient" (health minister on driver-chosen hospitals): [https://www.deccanherald.com/india/karnataka](https://www.deccanherald.com/india/karnataka)
+* IIHMR & Emergency Access Studies, evaluations on pre-hospital delay, trauma triage, and facility matching in emergency medical networks: [https://www.iihmrbangalore.edu.in/research/completed-projects](https://www.iihmrbangalore.edu.in/research/completed-projects)
+* Citizen Matters, "When an ambulance driver stopped for dinner and never reached the patient, who died later" (Karnataka CAG audit analysis): [https://citizenmatters.in/when-an-ambulance-driver-stopped-for-dinner-and-never-reached-the-patient-who-died-later](https://citizenmatters.in/when-an-ambulance-driver-stopped-for-dinner-and-never-reached-the-patient-who-died-later)
 * The News Minute, "108 ambulances failed to reach 50% patients within time in Karnataka: CAG" (Official audit findings on 72% compliance & golden hour access): [https://www.thenewsminute.com/karnataka/108-ambulances-failed-reach-50-patients-within-time-karnataka-cag-139366](https://www.thenewsminute.com/karnataka/108-ambulances-failed-reach-50-patients-within-time-karnataka-cag-139366)
 * Orissa Post, "Karnataka: 108 ambulance service failed to reach 50% patients within time" (CAG audit findings & pre-alert recommendations): [https://www.orissapost.com/karnataka-108-ambulance-service-failed-to-reach-50-patients-within-time/](https://www.orissapost.com/karnataka-108-ambulance-service-failed-to-reach-50-patients-within-time/)
 * Madhyamam, "CAG finds loopholes in running 108 ambulance services" (Kerala audit findings): [https://english.madhyamam.com/kerala/2015/mar/23/cag-finds-loopholes-running-108-ambulance-services](https://english.madhyamam.com/kerala/2015/mar/23/cag-finds-loopholes-running-108-ambulance-services)

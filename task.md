@@ -6,12 +6,18 @@
 - **Interoperability:** CAD Sidecar interface, ABDM Health Facility Registry (HFR) IDs, FHIR R4 schema alignment, and offline-first / SMS-USSD fallback mechanism.
 
 ## Immediate Next Steps
-- [ ] Build Crew App & Quick Simulation Chart (`/crew` 1-tap accept/override mobile view and `/simulation` comparison chart: Nearest vs CMER first-time treatment rate).
+- [ ] Build Crew App (`/crew` 1-tap accept/override mobile view) and Frontend Simulation View (`/simulation`).
 
 ## Completed Tasks
 - [x] Bootstrapped token-efficient agent rules (`.antigravityrules`)
 - [x] Configured quiet linter (`ruff.toml`)
 - [x] Initialized architecture specification and prototype roadmap (`README.md`, `document.md`)
+- [x] Discrete-Event Simulation Pipeline (`backend/app/engine/simulation.py`):
+  - 4-strategy head-to-head Monte Carlo comparison across 200 independent stochastic runs.
+  - Non-circular ground-truth bed queue dynamics (burst walk-in admissions & log-normal stay proxy).
+  - Pre-alert bed hold vs unheld bed race conditions.
+  - Automated plot generation (`sim_results_strategies.png`, `sim_calibration_diagram.png`, `sim_reporting_sweep.png`).
+  - REST endpoint: `GET /simulation/results`.
 - [x] Scaffolding & Seed Data (Python venv, Vite React, 15 synthetic Bengaluru hospitals with HFR IDs)
 - [x] Capability Mapping & Ranking Engine:
   - `backend/app/engine/capability.py`: maps clinical emergencies (TRAUMA, CARDIAC, STROKE, etc.) to capability profiles and target wards.

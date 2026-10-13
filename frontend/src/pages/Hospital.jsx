@@ -155,7 +155,7 @@ export default function HospitalDashboard() {
       await confirmReservation(resId);
       setIncomingPreAlert(null);
       await loadHospitalData();
-      setActionSuccessMsg('Bed reservation confirmed! 20-minute hold initiated.');
+      setActionSuccessMsg('Bed reservation confirmed! Bed held until ETA + buffer.');
       setTimeout(() => setActionSuccessMsg(null), 4000);
     } catch (err) {
       console.error('Failed to confirm reservation:', err);

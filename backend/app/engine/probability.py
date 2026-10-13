@@ -79,18 +79,22 @@ def compute_p_ok(
     - Historical reliability blend
     Returns: (p_ok, freshness_band, age_minutes)
     """
-    ward = hospital.get("wards", {}).get(ward_name, {})
+    from app.engine.capability import get_effective_ward
+    eff_ward_name = get_effective_ward(hospital, category)
+    ward = hospital.get("wards", {}).get(eff_ward_name)
     if not ward:
-        # Fallback to ER if specific ward not present
-        ward = hospital.get("wards", {}).get("ER", {"free": 0, "total": 0, "age_min": 60, "held": 0})
+        # Hospital has specialty listed in capability but zero designated ward beds for this condition!
+        # Penalize heavily (0 free beds, aged status) rather than borrowing standard ER beds
+        ward = {"free": 0, "total": 0, "age_min": 60.0, "held": 0}
 
     free_beds = ward.get("free", 0)
     held_beds = ward.get("held", 0)
     age_min = ward.get("age_min", 15)
 
-    rates = hospital.get("rates", {}).get(ward_name, {"d": 0.05, "a": 0.06})
+    rates = hospital.get("rates", {}).get(eff_ward_name, {"d": 0.05, "a": 0.06})
     d_rate = rates.get("d", 0.05) / 60.0  # convert hourly to per-minute
     a_rate = rates.get("a", 0.06) / 60.0
+
 
     p_bed = estimate_bed_probability(
         free_beds=free_beds,

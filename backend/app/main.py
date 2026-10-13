@@ -468,6 +468,20 @@ async def cad_sidecar_incident(req: CaseCreateRequest):
 
 
 # -------------------------------------------------------------
+# Simulation Engine API Endpoint
+# -------------------------------------------------------------
+@app.get("/simulation/results")
+def get_simulation_results(runs: int = Query(200, ge=20, le=500)):
+    """
+    Executes discrete-event Monte Carlo simulation across 4 strategies.
+    Returns statistical metrics, standard error margins, and sensitivity analysis.
+    """
+    from app.engine.simulation import run_full_simulation
+    return run_full_simulation(num_runs=runs)
+
+
+
+# -------------------------------------------------------------
 # WebSocket Hub Route
 # -------------------------------------------------------------
 @app.websocket("/ws/{role}/{identifier}")
