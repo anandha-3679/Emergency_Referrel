@@ -2,7 +2,8 @@
  * CMER API and WebSocket Client utilities
  */
 
-const API_BASE = 'http://localhost:8000';
+const API_BASE = import.meta.env.VITE_API_BASE_URL || 'https://emergency-referrel.onrender.com';
+const WS_BASE = API_BASE.replace(/^http/, 'ws');
 
 export async function fetchHospitals() {
   const res = await fetch(`${API_BASE}/hospitals`);
@@ -125,7 +126,7 @@ export async function updateHospitalStatus(hospitalId, updateData) {
 }
 
 export function subscribeWebSocket(role, identifier, onMessage, onError) {
-  const wsUrl = `ws://localhost:8000/ws/${role}/${identifier}`;
+  const wsUrl = `${WS_BASE}/ws/${role}/${identifier}`;
   let ws = null;
   let isClosedManually = false;
 
