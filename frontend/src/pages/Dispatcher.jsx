@@ -94,7 +94,6 @@ export default function Dispatcher() {
       'dispatcher',
       'all',
       (msg) => {
-        setWsConnected(true);
         if (msg.type === 'status.updated' || msg.type === 'status.verified') {
           loadHospitals();
           // If active case, refresh recommendations
@@ -107,7 +106,8 @@ export default function Dispatcher() {
           setTimeout(() => setCadNotification(null), 5000);
         }
       },
-      () => setWsConnected(false)
+      () => setWsConnected(false),
+      () => setWsConnected(true)
     );
     return () => unsubscribe();
   }, [loadHospitals, activeCase, handleCreateCase]);

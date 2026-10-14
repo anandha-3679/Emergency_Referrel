@@ -125,14 +125,24 @@ export async function updateHospitalStatus(hospitalId, updateData) {
   return res.json();
 }
 
-export function subscribeWebSocket(role, identifier, onMessage, onError) {
+export function subscribeWebSocket(role, identifier, onMessage, onError, onOpen) {
   const wsUrl = `${WS_BASE}/ws/${role}/${identifier}`;
   let ws = null;
   let isClosedManually = false;
+  let pingInterval = null;
 
   function connect() {
     try {
       ws = new WebSocket(wsUrl);
+
+      ws.onopen = () => {
+        if (onOpen) onOpen();
+        pingInterval = setInterval(() => {
+          if (ws && ws.readyState === WebSocket.OPEN) {
+            ws.send('ping');
+          }
+        }, 20000);
+      };
 
       ws.onmessage = (event) => {
         try {
@@ -148,6 +158,8 @@ export function subscribeWebSocket(role, identifier, onMessage, onError) {
       };
 
       ws.onclose = () => {
+        if (pingInterval) clearInterval(pingInterval);
+        if (onError) onError();
         if (!isClosedManually) {
           setTimeout(connect, 3000); // Reconnect after 3s
         }
@@ -161,6 +173,7 @@ export function subscribeWebSocket(role, identifier, onMessage, onError) {
 
   return () => {
     isClosedManually = true;
+    if (pingInterval) clearInterval(pingInterval);
     if (ws) ws.close();
   };
 }
